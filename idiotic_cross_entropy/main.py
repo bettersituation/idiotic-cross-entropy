@@ -14,8 +14,10 @@ if __name__ == '__main__':
 
     for data_type in data_types:
         data_loader = Loader(data_type)
-        test_feature, test_label = data_loader.get_test_batch(flatten=True)
-        feature_shape, label_num = data_loader.get_shape(flatten=True)
+        test_feature, test_label = data_loader.get_test_batch(flatten=False)
+        feature_shape, label_num = data_loader.get_shape(flatten=False)
+        if len(feature_shape) == 2:
+            feature_shape.append(1)
 
         for batch_s in batch_size:
             for train_loss_type in train_losses_type:
@@ -28,7 +30,7 @@ if __name__ == '__main__':
                     model.reset()
 
                     for i in range(1000):
-                        train_feature, train_label = data_loader.get_train_batch(BATCH_SIZE, flatten=True)
+                        train_feature, train_label = data_loader.get_train_batch(BATCH_SIZE, flatten=False)
                         training_step, train_cross_entropy, train_l1, train_l2, train_accuracy = model.train(train_feature, train_label)
 
                         if i % 10 == 9:

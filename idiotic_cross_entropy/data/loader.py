@@ -53,13 +53,16 @@ class Loader:
         if flatten:
             return [self._feature_num], self._label_num
         else:
-            return self._feature_shape, self._label_num
+            return list(self._feature_shape), self._label_num
 
     def get_train_batch(self, batch_size, flatten=False):
         picked_indices = np.random.choice(self._train_size, batch_size)
         x = self.train_feature[picked_indices]
         if flatten:
             x = x.reshape(batch_size, self._feature_num)
+        else:
+            if x.ndim == 3:
+                x = x[..., np.newaxis]
         y = self.train_label[picked_indices]
         return x, y
 
@@ -67,4 +70,7 @@ class Loader:
         if flatten:
             return self.test_feature.reshape(self._test_size, self._feature_num), self.test_label
         else:
-            return self.test_feature, self.test_label
+            if self.test_feature.ndim == 3:
+                return self.test_feature[..., np.newaxis], self.test_label
+            else:
+                return self.test_feature, self.test_label

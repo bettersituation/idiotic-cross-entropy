@@ -1,5 +1,5 @@
 import tensorflow as tf
-
+from functools import partial
 
 class Net:
     def __init__(self, sess, feature_shape, label_num, idiotic_alpha, train_loss='cross_entropy'):
@@ -10,9 +10,14 @@ class Net:
         self.x_ph = tf.placeholder(tf.float32, [None, *feature_shape], 'x')
         self.y_ph = tf.placeholder(tf.float32, [None, label_num], 'y')
 
-        self.l1 = tf.layers.dense(self.x_ph, 256, tf.nn.relu)
-        self.l2 = tf.layers.dense(self.l1, 256, tf.nn.relu)
-        self.pred_y = tf.layers.dense(self.l2, label_num, tf.nn.softmax)
+        conv2d = partial(tf.layers.conv2d, kernel_size=[5, 5], strides=1, padding='same', activation=tf.nn.relu)
+        pool2d = partial(tf.layers.max_pooling2d, pool_size=[3, 3], strides=2)
+
+        self.l1 = pool2d(conv2d(self.x_ph, 16))
+        self.l2 = pool2d(conv2d(self.x_ph, 32))
+        self.l3 = pool2d(conv2d(self.x_ph, 64))
+        self.l_f = tf.layers.flatten(self.l3)
+        self.pred_y = tf.layers.dense(self.l_f, label_num, tf.nn.softmax)
 
         self.idiotic_label = tf.stop_gradient((1 - self._idiotic_alpha) * self.y_ph + self._idiotic_alpha * self.pred_y)
 
